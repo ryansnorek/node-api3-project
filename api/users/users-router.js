@@ -23,50 +23,54 @@ router.get('/:id', validateUserId, (req, res) => res.json(req.user));
 
 router.post('/', validateUser, createUser, (req, res) => res.json(req.newUser));
 
+// Solution video POST alternative
+// Users.insert({ name: req.name })
+//   .then(newUser => {
+//     res.status(201).json(newUser);
+//   })
+//   .catch(next)
+
 router.put('/:id', validateUser, validateUserId, async (req, res, next) => {
   try {
     const updatedUser = await Users.update(req.params.id, req.body);
     res.json(updatedUser);
-  } catch (e) {
-    res.status(500).json({ message: "nope" });
-  }
+  } catch (e) { next(e) }
 });
+// Solution alternative PUT 
+// Users.update(req.params.id, { name: req.name })
+//   .then(() => {
+//     return Users.getById(req.params.id)
+//   })
+//   .then(user => res.json(user))
+//   .catch(next)
 
-router.delete('/:id', validateUserId, async (req, res) => {
+router.delete('/:id', validateUserId, async (req, res, next) => {
   const { id } = req.params;
   try {
     const user = await Users.getById(id)
     await Users.remove(id);
     res.json(user);
-  } catch (e) {
-    res.status(500).json({ message: "fatal errrrrrrr" });
-  }
+  } catch (e) { next(e) }
 });
 
-router.get('/:id/posts', validateUserId, async (req, res) => {
+router.get('/:id/posts', validateUserId, async (req, res, next) => {
   try {
     const posts = await Users.getUserPosts(req.params.id);
     res.json(posts)
-  } catch (e) {
-    res.status(500).json({ message: "lewser" });
-  }
+  } catch (e) { next(e) }
 });
 
 router.post('/:id/posts', 
             validateUserId, 
             validatePost,
-            async (req, res) => {
-            // RETURN THE NEWLY CREATED USER POST
-            try {
-              const newPost = { ...req.body, ...req.params.id };
-              console.log(newPost)
-              const post = await Posts.insert(newPost);
-              console.log(post)
-              res.json(newPost);
-            } catch (e) {
-              res.status(500).json({ message: "you broke eet" });
-            }
-
+            async (req, res, next) => {
+              try {
+                const result = await Posts.insert({
+                  user_id: req.params.id,
+                  text: req.text
+                });
+                res.status(201).json(result);
+              } catch (e) { next(e) }
 });
 
 router.use((err, req, res, next) => { //eslint-disable-line
