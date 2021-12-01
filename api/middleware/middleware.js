@@ -1,3 +1,6 @@
+const Users = require("../users/users-model");
+const Posts = require("../posts/posts-model");
+
 function logger(req, res, next) {
   console.log(
     `[${new Date().toISOString()}] 
@@ -9,7 +12,12 @@ function logger(req, res, next) {
 }
 
 function validateUserId(req, res, next) {
-  // DO YOUR MAGIC
+  Users.getById(req.params.id)
+    .then(res => {
+      req.user = res;
+      next();
+    })
+    .catch(e => next({ message: e }));
 }
 
 function validateUser(req, res, next) {
@@ -20,7 +28,6 @@ function validatePost(req, res, next) {
   // DO YOUR MAGIC
 }
 
-// do not forget to expose these functions to other modules
 module.exports = {
   logger,
   validateUserId,

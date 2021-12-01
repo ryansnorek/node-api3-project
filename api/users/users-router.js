@@ -3,25 +3,28 @@ const express = require('express');
 const Users = require("./users-model");
 const Posts = require("../posts/posts-model");
 
-const middleware = require("../middleware/middleware");
-const { validateUserId, validateUser, validatePost } = middleware;
+const { 
+  logger, 
+  validateUserId, 
+  validateUser, 
+  validatePost
+} = require("../middleware/middleware");
 
 const router = express.Router();
+
+router.use(logger);
 
 router.get('/', (req, res) => {
   Users.get()
     .then(users => res.json(users))
-    .catch(err => {
-      res.status(500).json({ message: err })
-    })
-
+    .catch(e => {
+      res.status(500).json({ message: e })
+    });
 });
 
-router.get('/:id', (req, res) => {
-  // RETURN THE USER OBJECT
-  // this needs a middleware to verify user id
-
-  // server.use(validateUserId);
+router.get('/:id', validateUserId, (req, res, next) => {
+  res.status(200).json(req.user);
+  next();
 });
 
 router.post('/', (req, res) => {
@@ -62,5 +65,7 @@ router.post('/:id/posts', (req, res) => {
   // server.use(validatePost);
   // server.use(validateUserId);
 });
+
+// router.use(errorHandling);
 
 module.exports = router;
