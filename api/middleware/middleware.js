@@ -30,7 +30,7 @@ function validateUser(req, res, next) {
   if (req.body.name) {
     next();
   } else {
-    next({ status: 400, message: "missing required name" });
+    res.status(400).json({ message: "missing required name" });
   }
    
 }
