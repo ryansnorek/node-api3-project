@@ -4,7 +4,6 @@ const Users = require("./users-model");
 const Posts = require("../posts/posts-model");
 
 const { 
-  logger, 
   validateUserId, 
   validateUser, 
   validatePost,
@@ -13,27 +12,23 @@ const {
 
 const router = express.Router();
 
-router.use(logger);
 
-router.get('/', (req, res) => {
+router.get('/', (req, res, next) => {
   Users.get()
     .then(users => res.json(users))
-    .catch(e => {
-      res.status(500).json({ message: e })
-    });
+    .catch(next)
 });
 
-router.get('/:id', validateUserId, (req, res, next) => res.json(req.user));
+router.get('/:id', validateUserId, (req, res) => res.json(req.user));
 
-router.post('/', validateUser, createUser, (req, res, next) => res.json(req.newUser));
+router.post('/', validateUser, createUser, (req, res) => res.json(req.newUser));
 
 router.put('/:id', validateUser, validateUserId, async (req, res, next) => {
   try {
     const updatedUser = await Users.update(req.params.id, req.body);
     res.json(updatedUser);
-    next();
   } catch (e) {
-    res.status(500).json({ message: "nope" })
+    res.status(500).json({ message: "nope" });
   }
 });
 
@@ -44,23 +39,42 @@ router.delete('/:id', validateUserId, async (req, res) => {
     await Users.remove(id);
     res.json(user);
   } catch (e) {
-    res.status(500).json({ message: "fatal errrrrrrr" })
+    res.status(500).json({ message: "fatal errrrrrrr" });
   }
+});
+
+router.get('/:id/posts', validateUserId, async (req, res) => {
+  try {
+    const posts = await Users.getUserPosts(req.params.id);
+    res.json(posts)
+  } catch (e) {
+    res.status(500).json({ message: "lewser" });
+  }
+});
+
+router.post('/:id/posts', 
+            validateUserId, 
+            validatePost,
+            async (req, res) => {
+            // RETURN THE NEWLY CREATED USER POST
+            try {
+              const newPost = { ...req.body, ...req.params.id };
+              console.log(newPost)
+              const post = await Posts.insert(newPost);
+              console.log(post)
+              res.json(newPost);
+            } catch (e) {
+              res.status(500).json({ message: "you broke eet" });
+            }
 
 });
 
-router.get('/:id/posts', validateUserId, (req, res) => {
-  // RETURN THE ARRAY OF USER POSTS
-  // this needs a middleware to verify user id
-
-});
-
-router.post('/:id/posts', validateUser, validateUserId, (req, res) => {
-  // RETURN THE NEWLY CREATED USER POST
-  // this needs a middleware to verify user id
-  // and another middleware to check that the request body is valid
-});
-
-// router.use(errorHandling);
+router.use((err, req, res, next) => { //eslint-disable-line
+  res.status(err.status || 500).json({
+    customMessage: "you broke eet",
+    message: err.message,
+    stack: err.stack
+  })
+})
 
 module.exports = router;
