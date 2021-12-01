@@ -7,7 +7,8 @@ const {
   logger, 
   validateUserId, 
   validateUser, 
-  validatePost
+  validatePost,
+  createUser
 } = require("../middleware/middleware");
 
 const router = express.Router();
@@ -23,12 +24,11 @@ router.get('/', (req, res) => {
 });
 
 router.get('/:id', validateUserId, (req, res, next) => {
-  console.log(req.user)
   res.json(req.user);
 });
 
-router.post('/', validateUser, (req, res, next) => {
-  res.json({ message: "worked" });
+router.post('/', validateUser, createUser, (req, res, next) => {
+  res.json(req.newUser);
 });
 
 router.put('/:id', validateUser, validateUserId, async (req, res, next) => {
