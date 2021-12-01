@@ -23,29 +23,29 @@ router.get('/', (req, res) => {
     });
 });
 
-router.get('/:id', validateUserId, (req, res, next) => {
-  res.json(req.user);
-});
+router.get('/:id', validateUserId, (req, res, next) => res.json(req.user));
 
-router.post('/', validateUser, createUser, (req, res, next) => {
-  res.json(req.newUser);
-});
+router.post('/', validateUser, createUser, (req, res, next) => res.json(req.newUser));
 
 router.put('/:id', validateUser, validateUserId, async (req, res, next) => {
-  // RETURN THE FRESHLY UPDATED USER OBJECT
   try {
     const updatedUser = await Users.update(req.params.id, req.body);
     res.json(updatedUser);
     next();
   } catch (e) {
-    res.status(500).json({ message: "nope"})
+    res.status(500).json({ message: "nope" })
   }
-
 });
 
-router.delete('/:id', validateUserId, (req, res) => {
-  // RETURN THE FRESHLY DELETED USER OBJECT
-  // this needs a middleware to verify user id
+router.delete('/:id', validateUserId, async (req, res) => {
+  const { id } = req.params;
+  try {
+    const user = await Users.getById(id)
+    await Users.remove(id);
+    res.json(user);
+  } catch (e) {
+    res.status(500).json({ message: "fatal errrrrrrr" })
+  }
 
 });
 

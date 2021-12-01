@@ -19,7 +19,7 @@ async function validateUserId(req, res, next) {
     else res.status(404).json({ message: "not found" });
     next();
   } catch (e) {
-    console.log(e);
+    console.log(e)
   }
 }
 
