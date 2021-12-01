@@ -17,10 +17,10 @@ async function validateUserId(req, res, next) {
     const user = await Users.getById(id);
     if (user) {
       req.user = { ...user, id };
-      next();
     } else {
-      next({ status: 404, message: 'not found' });
+      res.status(404).json({ message: "not found" });
     }
+    next();
   } catch (e) {
     console.log(e)
   }
