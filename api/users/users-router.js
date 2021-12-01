@@ -23,18 +23,23 @@ router.get('/', (req, res) => {
 });
 
 router.get('/:id', validateUserId, (req, res, next) => {
+  console.log(req.user)
   res.json(req.user);
-  next();
 });
 
-router.post('/', validateUser, (req, res) => {
-  res.json({ message: "worked" })
+router.post('/', validateUser, (req, res, next) => {
+  res.json({ message: "worked" });
 });
 
-router.put('/:id', validateUser, validateUserId, (req, res) => {
+router.put('/:id', validateUser, validateUserId, async (req, res, next) => {
   // RETURN THE FRESHLY UPDATED USER OBJECT
-  // this needs a middleware to verify user id
-  // and another middleware to check that the request body is valid
+  try {
+    const updatedUser = await Users.update(req.params.id, req.body);
+    res.json(updatedUser);
+    next();
+  } catch (e) {
+    res.status(500).json({ message: "nope"})
+  }
 
 });
 

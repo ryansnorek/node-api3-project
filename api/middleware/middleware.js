@@ -11,21 +11,28 @@ function logger(req, res, next) {
   next();
 }
 
-function validateUserId(req, res, next) {
-  Users.getById(req.params.id)
-    .then(res => {
-      req.user = res;
+async function validateUserId(req, res, next) {
+  const { id } = req.params;
+  try {
+    const user = await Users.getById(id);
+    if (user) {
+      req.user = { ...user, id };
       next();
-    })
-    .catch(() => next({ status: 404, message: "user not found" }));
+    } else {
+      next({ status: 404, message: 'not found' });
+    }
+  } catch (e) {
+    console.log(e)
+  }
 }
 
 function validateUser(req, res, next) {
-  if (!req.body.name) {
-    next({ status: 400, message: "missing required name field" });
-  } else {
+  if (req.body.name) {
     next();
+  } else {
+    next({ status: 400, message: "missing required name" });
   }
+   
 }
 
 function validatePost(req, res, next) {
